@@ -1,0 +1,23 @@
+name = "test"
+description = ""
+version = "0.1.0-dev"
+
+authors = ["Jeremy Grosser"]
+maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
+maintainers-logins = ["JeremyGrosser"]
+licenses = "BSD-3-Clause"
+website = ""
+tags = []
+
+executables = ["test"]
+
+[[depends-on]]
+enet_enc28j60 = "*"
+adafruit_metro_rp2040_bsp = "~0.1.0-dev"
+
+[[pins]]
+enet_enc28j60 = { path='..' }
+adafruit_metro_rp2040_bsp = { url='https://github.com/JeremyGrosser/adafruit_metro_rp2040_bsp.git' }
+
+[build-switches]
+release.optimization = ["-gnatn2", "-Os"]
