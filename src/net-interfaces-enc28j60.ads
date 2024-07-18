@@ -10,6 +10,7 @@ package Net.Interfaces.ENC28J60 is
 
    type ENC28J60_Ifnet is new Ifnet_Type with private;
 
+   overriding
    procedure Initialize
       (Ifnet : in out ENC28J60_Ifnet);
 
@@ -17,10 +18,12 @@ package Net.Interfaces.ENC28J60 is
       (Ifnet : in out ENC28J60_Ifnet;
        Up    : out Boolean);
 
+   overriding
    procedure Send
       (Ifnet : in out ENC28J60_Ifnet;
        Buf   : in out Net.Buffers.Buffer_Type);
 
+   overriding
    procedure Receive
       (Ifnet : in out ENC28J60_Ifnet;
        Buf   : in out Net.Buffers.Buffer_Type);
