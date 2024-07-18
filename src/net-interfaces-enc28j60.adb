@@ -200,6 +200,9 @@ package body Net.Interfaces.ENC28J60 is
    MIISCAN   : constant UInt8 := 16#02#;
    MIIRD     : constant UInt8 := 16#01#;
 
+   --  EBSTCON bit definitions
+   BISTST    : constant UInt8 := 16#01#;
+
    --  MISTAT bit definitions
    NVALID    : constant UInt8 := 16#04#;
    SCAN      : constant UInt8 := 16#02#;
@@ -410,11 +413,37 @@ package body Net.Interfaces.ENC28J60 is
       Chip_Select (True);
    end Read_Buffer;
 
+   procedure Self_Test
+      (Ifnet : in out ENC28J60_Ifnet)
+   is
+      Status : UInt8;
+      DMA_Checksum, BST_Checksum : UInt16;
+   begin
+      Write_16 (Ifnet, EDMASTL, 16#0000#);
+      Write_16 (Ifnet, EDMANDL, 16#1FFF#);
+      Write_16 (Ifnet, ERXNDL, 16#1FFF#);
+      Write_Op (Ifnet, BFS, ECON1, CSUMEN);
+      Write_Op (Ifnet, BFS, EBSTCON, BISTST);
+      Write_Op (Ifnet, BFS, ECON1, DMAST);
+      loop
+         Read_Op (Ifnet, RCR, ECON1, Status);
+         exit when (Status and DMAST) = 0;
+      end loop;
+      Read_16 (Ifnet, EDMACSL, DMA_Checksum);
+      Read_16 (Ifnet, EBSTCSL, BST_Checksum);
+      if DMA_Checksum /= BST_Checksum then
+         raise Program_Error with "ENC28J60 Self Test Failed";
+      end if;
+   end Self_Test;
+
    procedure Initialize
       (Ifnet : in out ENC28J60_Ifnet)
    is
    begin
-      Write_Op (Ifnet, SC, 0, SC);
+      --  Soft reset is unneeded if the hardware reset line was toggled
+      --  Write_Op (Ifnet, SC, 0, SC);
+      --  delay 0.001; --  Errata 1
+      Self_Test (Ifnet);
       Ifnet.Next_Packet_Ptr := RXSTART_INIT;
       Write_16 (Ifnet, ERXSTL, RXSTART_INIT);
       Write_16 (Ifnet, ERXRDPTL, RXSTART_INIT);
